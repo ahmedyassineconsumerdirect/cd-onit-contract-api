@@ -2,3 +2,7 @@
 __pycache__/
 *.pyc
 .claude/
+*.mp4
+*.mov
+*.avi
+*.mkv
