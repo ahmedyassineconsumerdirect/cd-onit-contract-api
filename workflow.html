@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onit CLM Automation Workflow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&display=swap');
+
+  :root {
+    --navy: #0B1D3A;
+    --teal: #0D8B7D;
+    --teal-light: #14B8A6;
+    --accent: #34D399;
+    --white: #FFFFFF;
+    --gray-50: #F8FAFC;
+    --gray-100: #F1F5F9;
+    --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1;
+    --gray-400: #94A3B8;
+    --gray-500: #64748B;
+    --gray-600: #475569;
+    --gray-800: #1E293B;
+    --blue: #2563EB;
+    --green: #16A34A;
+    --purple: #7C3AED;
+    --orange: #D97706;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-800);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.6;
+  }
+
+  .header {
+    background: var(--navy);
+    padding: 40px 0 36px;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal), var(--accent), var(--teal-light));
+  }
+
+  .container { max-width: 920px; margin: 0 auto; padding: 0 32px; }
+
+  .header .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .header-badge {
+    font-size: 12px;
+    color: var(--teal-light);
+    border: 1px solid rgba(20,184,166,0.3);
+    padding: 4px 14px;
+    border-radius: 100px;
+  }
+
+  .content { padding: 48px 0 80px; }
+
+  /* Overview */
+  .overview {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 40px;
+  }
+
+  .overview h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .flow-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .flow-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .flow-chip.blue { background: var(--blue); }
+  .flow-chip.green { background: var(--green); }
+  .flow-chip.purple { background: var(--purple); }
+  .flow-chip.orange { background: var(--orange); }
+
+  .flow-chip .num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  .flow-arrow { font-size: 20px; color: var(--gray-300); padding: 0 8px; }
+
+  .legend {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--gray-500);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+
+  .cli-box {
+    margin-top: 18px;
+    background: var(--navy);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: #E2E8F0;
+  }
+  .cli-box .c { color: #64748B; }
+  .cli-box .cmd { color: #7DD3FC; }
+
+  /* Steps */
+  .step { margin-bottom: 36px; }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid;
+  }
+
+  .step-head.blue { border-color: var(--blue); }
+  .step-head.green { border-color: var(--green); }
+  .step-head.purple { border-color: var(--purple); }
+  .step-head.orange { border-color: var(--orange); }
+
+  .step-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: var(--white);
+  }
+
+  .step-icon.blue { background: var(--blue); }
+  .step-icon.green { background: var(--green); }
+  .step-icon.purple { background: var(--purple); }
+  .step-icon.orange { background: var(--orange); }
+
+  .step-head h2 { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; }
+
+  .step-tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 5px; margin-left: auto;
+  }
+
+  .step-tag.blue { background: rgba(37,99,235,0.1); color: var(--blue); }
+  .step-tag.green { background: rgba(22,163,74,0.1); color: var(--green); }
+  .step-tag.purple { background: rgba(124,58,237,0.1); color: var(--purple); }
+  .step-tag.orange { background: rgba(217,119,6,0.1); color: var(--orange); }
+
+  /* API Card */
+  .api-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .api-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    background: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .badge {
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+    color: var(--white);
+  }
+
+  .badge.post { background: var(--green); }
+  .badge.get { background: var(--blue); }
+  .badge.put { background: var(--orange); }
+
+  .api-url {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--gray-600);
+    word-break: break-all;
+  }
+
+  .api-url .p { color: var(--teal); font-weight: 500; }
+
+  /* Code Block */
+  .code {
+    background: var(--navy);
+    overflow: hidden;
+  }
+
+  .code-bar {
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+
+  .code-lbl {
+    font-size: 11px; color: var(--gray-400);
+    letter-spacing: 0.5px; margin-left: 6px;
+  }
+
+  .code pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #E2E8F0;
+  }
+
+  .code .c { color: #64748B; }
+  .code .k { color: #7DD3FC; }
+  .code .s { color: #86EFAC; }
+  .code .v { color: #FDE68A; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+
+  .tbl th {
+    text-align: left; padding: 10px 16px;
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    font-weight: 600; font-size: 11px; letter-spacing: 0.3px;
+    text-transform: uppercase; color: var(--gray-600);
+  }
+
+  .tbl td {
+    padding: 9px 16px; border: 1px solid var(--gray-200);
+    color: var(--gray-600); background: var(--white); vertical-align: top;
+  }
+
+  .tbl td:first-child {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    color: var(--teal); white-space: nowrap;
+  }
+
+  .req { color: #EF4444; font-weight: 600; font-size: 11px; }
+
+  .src {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+
+  .src.csv { background: rgba(37,99,235,0.1); color: var(--blue); }
+  .src.fix { background: rgba(148,163,184,0.15); color: var(--gray-500); }
+  .src.api { background: rgba(22,163,74,0.1); color: var(--green); }
+
+  /* Note + Callout */
+  .note {
+    padding: 14px 18px; border-radius: 10px; margin: 14px 0;
+    font-size: 13px; line-height: 1.6; display: flex; gap: 10px;
+    background: rgba(13,139,125,0.06); border: 1px solid rgba(13,139,125,0.15);
+    color: var(--gray-600);
+  }
+
+  .note.warn {
+    background: rgba(249,115,22,0.06); border-color: rgba(249,115,22,0.15);
+  }
+
+  .note code {
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    background: var(--gray-100); border: 1px solid var(--gray-200);
+    padding: 1px 6px; border-radius: 4px; color: var(--teal);
+  }
+
+  .arrow-down {
+    display: flex; justify-content: center; margin: 12px 0 28px;
+  }
+
+  .footer {
+    background: var(--navy); padding: 28px 0;
+    text-align: center; font-size: 13px; color: var(--gray-400);
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container">
+    <h1>Onit CLM Automation Workflow</h1>
+    <div class="header-badge">API Reference</div>
+  </div>
+</header>
+
+<main class="content">
+<div class="container">
+
+  <!-- Overview -->
+  <div class="overview">
+    <h2>End-to-End Flow</h2>
+    <div class="flow-steps">
+      <div class="flow-chip blue"><span class="num">1</span> Create Contract</div>
+      <span class="flow-arrow">&#8594;</span>
+      <div class="flow-chip orange"><span class="num">2</span> Generate Order Form</div>
+      <span class="flow-arrow">&#8594;</span>
+      <div class="flow-chip purple"><span class="num">3</span> Send for Signature</div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="src csv">CSV</span> Snowflake/HubSpot export</div>
+      <div class="legend-item"><span class="src fix">STATIC</span> Hardcoded value</div>
+      <div class="legend-item"><span class="src api">API</span> From previous step</div>
+    </div>
+    <div class="cli-box">
+      <span class="c"># Full automation flow</span><br>
+      <span class="cmd">python onit_client.py create-contract</span> data.csv<br>
+      <span class="cmd">python onit_client.py start-axdraft</span> &lt;atom_id&gt;    <span class="c"># then complete in AxDraft UI</span><br>
+      <span class="cmd">python onit_client.py send-for-signature</span> &lt;atom_id&gt;
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 1: Create Contract -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="step">
+    <div class="step-head blue">
+      <div class="step-icon blue">1</div>
+      <h2>Create Contract</h2>
+      <span class="step-tag blue">Onit API</span>
+    </div>
+
+    <div class="note">
+      <span>&#9432;</span>
+      <div>Looks up the Other Party Contact ID by <code>CONTACT_EMAIL</code>, then creates the CLM contract. The contact must already exist in Onit.</div>
+    </div>
+
+    <!-- Step 1a: Contact Lookup -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge get">GET</span>
+        <span class="api-url">/api/atom_dictionaries/<span class="p">5ce59de8d8a1be14f7002d9a</span>/atoms.json?filter=<span class="p">[encoded]</span></span>
+      </div>
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Filter Parameter (URL-encoded JSON)</span>
+        </div>
+        <pre>[{
+  <span class="k">"field"</span>: <span class="s">"p_email"</span>,
+  <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"comparison"</span>: <span class="s">"equals"</span>,
+  <span class="k">"value"</span>: <span class="s">"ahmed@consumerdirect.com"</span>  <span class="c">// CONTACT_EMAIL from CSV</span>
+}]</pre>
+      </div>
+    </div>
+
+    <div class="api-card">
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Response</span>
+        </div>
+        <pre>{
+  <span class="k">"success"</span>: <span class="v">true</span>,
+  <span class="k">"data"</span>: [{
+    <span class="k">"name"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"_id"</span>: <span class="s">"d09c7aee-de56-4976-9327-2cd35669a543"</span>  <span class="c">// &larr; contact_id</span>
+  }]
+}</pre>
+      </div>
+    </div>
+
+    <!-- Step 1b: Create Contract -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge post">POST</span>
+        <span class="api-url">/api/atom_dictionaries/<span class="p">54b7e691ed404f54990003bf</span>/atoms</span>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr><th>Field</th><th>Description</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>p_contract_type</td><td>Always "Order Form"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_deal_id</td><td>HubSpot Deal ID</td><td><span class="src csv">DEAL_ID</span></td></tr>
+          <tr><td>p_custom_company_name</td><td>Company Name (UI display)</td><td><span class="src csv">COMPANY_NAME</span></td></tr>
+          <tr><td>p_other_party_name</td><td>Other Party name</td><td><span class="src csv">COMPANY_NAME</span></td></tr>
+          <tr><td>p_other_party_select</td><td>Other Party dropdown (validation)</td><td><span class="src csv">COMPANY_NAME</span></td></tr>
+          <tr><td>p_other_party_select_contact</td><td>Contact record ID</td><td><span class="src api">contact_id</span></td></tr>
+          <tr><td>p_other_party_contact_name</td><td>Contact full name</td><td><span class="src csv">CONTACT_NAME</span></td></tr>
+          <tr><td>p_other_party_contact_email</td><td>Contact email</td><td><span class="src csv">CONTACT_EMAIL</span></td></tr>
+          <tr><td>requester_email</td><td>Must be a real Onit user</td><td><span class="src csv">REQUESTING_EMAIL</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Request Body</span>
+        </div>
+        <pre>{
+  <span class="k">"atom"</span>: {
+    <span class="k">"p_contract_type"</span>: <span class="s">"Order Form"</span>,
+    <span class="k">"p_deal_id"</span>: <span class="s">"58029760808"</span>,
+    <span class="k">"p_custom_company_name"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"p_other_party_name"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"p_other_party_select"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"p_other_party_select_contact"</span>: <span class="s">"d09c7aee-de56-4976-9327-2cd35669a543"</span>,
+    <span class="k">"p_other_party_contact_name"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"p_other_party_contact_email"</span>: <span class="s">"ahmed@consumerdirect.com"</span>,
+    <span class="k">"requester_email"</span>: <span class="s">"ahmed@consumerdirect.com"</span>
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="api-card">
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Response</span>
+        </div>
+        <pre>{
+  <span class="k">"success"</span>: <span class="v">true</span>,
+  <span class="k">"message"</span>: <span class="s">"Atom Created"</span>,
+  <span class="k">"data"</span>: <span class="s">"6294b97f-f975-4a35-8f0d-bbaefd03ee3b"</span>  <span class="c">// &larr; contract atom_id</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down"><svg width="20" height="36" viewBox="0 0 20 36"><path d="M10 0 L10 28 M5 23 L10 30 L15 23" stroke="#CBD5E1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 2: Generate Order Form (AxDraft) -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="step">
+    <div class="step-head orange">
+      <div class="step-icon orange">2</div>
+      <h2>Generate Order Form</h2>
+      <span class="step-tag orange">AxDraft</span>
+    </div>
+
+    <div class="note warn">
+      <span>&#9888;</span>
+      <div><strong>Waiting on AxDraft API key.</strong> Currently triggered via <code>execute_reaction</code> then completed manually in the AxDraft UI. Will be fully automated via AxDraft Generation API.</div>
+    </div>
+
+    <!-- Step 2a: Trigger reaction -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge put">PUT</span>
+        <span class="api-url">/api/atoms/<span class="p">&lt;atom_id&gt;</span>/execute_reaction/?reaction_name=<span class="p">Start%20AxDraft%20Contract</span></span>
+      </div>
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Response</span>
+        </div>
+        <pre>{
+  <span class="k">"success"</span>: <span class="v">true</span>,
+  <span class="k">"message"</span>: <span class="s">"Action Executed"</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- AxDraft questionnaire mapping -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge post">POST</span>
+        <span class="api-url">AxDraft Generation API <span class="p">(pending API key)</span></span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>AxDraft Field</th><th>Value</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Workspace</td><td>2422</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>Document Template</td><td>14897</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>Type_in_Company_name</td><td>"Ahmed Yassine"</td><td><span class="src csv">COMPANY_NAME</span></td></tr>
+          <tr><td>Type_in_Contact_firstname</td><td>"Ahmed"</td><td><span class="src csv">CONTACT_NAME (split)</span></td></tr>
+          <tr><td>Type_in_Contact_lastname</td><td>"Yassine"</td><td><span class="src csv">CONTACT_NAME (split)</span></td></tr>
+          <tr><td>Type_in_Contact_email</td><td>"ahmed@consumerdirect.com"</td><td><span class="src csv">CONTACT_EMAIL</span></td></tr>
+          <tr><td>Type_in_Order_ID</td><td>"58029760808"</td><td><span class="src csv">DEAL_ID</span></td></tr>
+          <tr><td>Type_in_Company_address</td><td>"44 Eagle Point"</td><td><span class="src csv">ADDRESS *</span></td></tr>
+          <tr><td>Type_in_Company_city</td><td>"Irvine"</td><td><span class="src csv">CITY *</span></td></tr>
+          <tr><td>Type_in_Company_state_territory</td><td>"California"</td><td><span class="src csv">STATE *</span></td></tr>
+          <tr><td>Type_in_Company_ZIP</td><td>"92604"</td><td><span class="src csv">ZIP *</span></td></tr>
+          <tr><td>onit_aid</td><td>"6294b97f-..."</td><td><span class="src api">contract atom_id</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span>&#9432;</span>
+      <div>After AxDraft generates the document, it pushes pricing and deal fields back to the contract atom (deal type, pricing tiers, trial period, etc.) and creates the "Consumer Direct - Order Form.docx" document.</div>
+    </div>
+  </div>
+
+  <div class="arrow-down"><svg width="20" height="36" viewBox="0 0 20 36"><path d="M10 0 L10 28 M5 23 L10 30 L15 23" stroke="#CBD5E1" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- STEP 3: Send for Signature -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="step">
+    <div class="step-head purple">
+      <div class="step-icon purple">3</div>
+      <h2>Send for Signature</h2>
+      <span class="step-tag purple">Onit API</span>
+    </div>
+
+    <div class="note">
+      <span>&#9432;</span>
+      <div>Finds the document by searching the Documents app (<code>5c6c79b19fcae642af000086</code>) where <code>p_parent_id</code> matches the contract atom ID, then creates a Send for Signature atom with 2 signers. HelloSign sends the signature request automatically.</div>
+    </div>
+
+    <!-- Step 3a: Document Lookup -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge get">GET</span>
+        <span class="api-url">/api/atom_dictionaries/<span class="p">5c6c79b19fcae642af000086</span>/atoms.json?filter=<span class="p">[encoded]</span></span>
+      </div>
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Filter: p_parent_id = contract atom_id</span>
+        </div>
+        <pre>[{
+  <span class="k">"field"</span>: <span class="s">"p_parent_id"</span>,
+  <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"comparison"</span>: <span class="s">"equals"</span>,
+  <span class="k">"value"</span>: <span class="s">"6294b97f-f975-4a35-8f0d-bbaefd03ee3b"</span>
+}]</pre>
+      </div>
+    </div>
+
+    <div class="api-card">
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Response (pick the "Order Form" document)</span>
+        </div>
+        <pre>{
+  <span class="k">"success"</span>: <span class="v">true</span>,
+  <span class="k">"data"</span>: [
+    { <span class="k">"name"</span>: <span class="s">"Consumer Direct - Order Form.docx"</span>, <span class="k">"_id"</span>: <span class="s">"b2d4d635-..."</span> },  <span class="c">// &larr; use this</span>
+    { <span class="k">"name"</span>: <span class="s">"Document 1029645"</span>, <span class="k">"_id"</span>: <span class="s">"..."</span> }  <span class="c">// auto-generated, skip</span>
+  ]
+}</pre>
+      </div>
+    </div>
+
+    <!-- Step 3b: Create Send for Signature atom -->
+    <div class="api-card">
+      <div class="api-bar">
+        <span class="badge post">POST</span>
+        <span class="api-url">/api/atom_dictionaries/<span class="p">5d2386add8a1be202a001fbc</span>/atoms</span>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr><th>Field</th><th>Description</th><th>Source</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>requester_email</td><td>Sender email</td><td><span class="src api">contract.requester_email</span></td></tr>
+          <tr><td>name</td><td>Always "temp"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_signature_method</td><td>Always "HelloSign"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_number_of_signers</td><td>Always 2</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_user_type_1</td><td>"Other Party Contact"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_recipient_name_1</td><td>Signer 1 name</td><td><span class="src api">contract.p_other_party_contact_name</span></td></tr>
+          <tr><td>p_recipient_email_1</td><td>Signer 1 email</td><td><span class="src api">contract.p_other_party_contact_email</span></td></tr>
+          <tr><td>p_country_code_1</td><td>Always "1"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_routing_order_1</td><td>Always 1</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_user_type_2</td><td>"Email Address"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_recipient_name_2</td><td>"Sales Operations"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_recipient_email_2</td><td>"orderform@consumerdirect.com"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_country_code_2</td><td>Always "1"</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>p_routing_order_2</td><td>Always 2</td><td><span class="src fix">STATIC</span></td></tr>
+          <tr><td>r_contract_id</td><td>Contract atom ID</td><td><span class="src api">contract atom_id</span></td></tr>
+          <tr><td>r_document_id</td><td>Order Form document ID</td><td><span class="src api">document lookup</span></td></tr>
+          <tr><td>p_document_parent_id_for_filter</td><td>Contract atom ID</td><td><span class="src api">contract atom_id</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Request Body</span>
+        </div>
+        <pre>{
+  <span class="k">"atom"</span>: {
+    <span class="k">"requester_email"</span>: <span class="s">"ahmed@consumerdirect.com"</span>,
+    <span class="k">"name"</span>: <span class="s">"temp"</span>,
+    <span class="k">"p_signature_method"</span>: <span class="s">"HelloSign"</span>,
+    <span class="k">"p_number_of_signers"</span>: <span class="v">2</span>,
+
+    <span class="c">// Signer 1: Other Party Contact</span>
+    <span class="k">"p_user_type_1"</span>: <span class="s">"Other Party Contact"</span>,
+    <span class="k">"p_recipient_name_1"</span>: <span class="s">"Ahmed Yassine"</span>,
+    <span class="k">"p_recipient_email_1"</span>: <span class="s">"ahmed@consumerdirect.com"</span>,
+    <span class="k">"p_country_code_1"</span>: <span class="s">"1"</span>,
+    <span class="k">"p_routing_order_1"</span>: <span class="v">1</span>,
+
+    <span class="c">// Signer 2: Sales Operations</span>
+    <span class="k">"p_user_type_2"</span>: <span class="s">"Email Address"</span>,
+    <span class="k">"p_recipient_name_2"</span>: <span class="s">"Sales Operations"</span>,
+    <span class="k">"p_recipient_email_2"</span>: <span class="s">"orderform@consumerdirect.com"</span>,
+    <span class="k">"p_country_code_2"</span>: <span class="s">"1"</span>,
+    <span class="k">"p_routing_order_2"</span>: <span class="v">2</span>,
+
+    <span class="c">// Links</span>
+    <span class="k">"r_contract_id"</span>: <span class="s">"6294b97f-f975-4a35-8f0d-bbaefd03ee3b"</span>,
+    <span class="k">"r_document_id"</span>: <span class="s">"b2d4d635-d0f0-442e-9328-68d9dc34a726"</span>,
+    <span class="k">"p_document_parent_id_for_filter"</span>: <span class="s">"6294b97f-f975-4a35-8f0d-bbaefd03ee3b"</span>
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="api-card">
+      <div class="code">
+        <div class="code-bar">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="code-lbl">Response</span>
+        </div>
+        <pre>{
+  <span class="k">"success"</span>: <span class="v">true</span>,
+  <span class="k">"message"</span>: <span class="s">"Atom Created"</span>,
+  <span class="k">"data"</span>: <span class="s">"345094b4-13fc-41f1-b7be-b86632f7f990"</span>
+}
+<span class="c">// Contract moves to phase: "Other Party Signatures"</span>
+<span class="c">// HelloSign sends signature request emails automatically</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <!-- Dictionary Reference -->
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <div class="step" style="margin-top: 48px;">
+    <div class="step-head" style="border-color: var(--gray-300);">
+      <div class="step-icon" style="background: var(--gray-500);">&#8505;</div>
+      <h2>Reference</h2>
+    </div>
+
+    <div class="api-card">
+      <table class="tbl">
+        <thead>
+          <tr><th>Dictionary</th><th>ID</th><th>Used In</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>CLM Contracts</td><td>54b7e691ed404f54990003bf</td><td>Step 1</td></tr>
+          <tr><td>Other Party Contacts</td><td>5ce59de8d8a1be14f7002d9a</td><td>Step 1 (lookup)</td></tr>
+          <tr><td>Documents</td><td>5c6c79b19fcae642af000086</td><td>Step 3 (lookup)</td></tr>
+          <tr><td>Send for Signature</td><td>5d2386add8a1be202a001fbc</td><td>Step 3</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="api-card" style="margin-top: 16px;">
+      <table class="tbl">
+        <thead>
+          <tr><th>CSV Column</th><th>Used In</th><th>Example</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>DEAL_ID</td><td>Step 1, 2</td><td>58029760808</td></tr>
+          <tr><td>COMPANY_NAME</td><td>Step 1, 2</td><td>Ahmed Yassine</td></tr>
+          <tr><td>CONTACT_NAME</td><td>Step 1</td><td>Ahmed Yassine</td></tr>
+          <tr><td>CONTACT_EMAIL</td><td>Step 1, 2, 3</td><td>ahmed@consumerdirect.com</td></tr>
+          <tr><td>REQUESTING_EMAIL</td><td>Step 1, 3</td><td>ahmed@consumerdirect.com</td></tr>
+          <tr><td>SIGNER_NAME</td><td>Step 3</td><td>Sales Operations</td></tr>
+          <tr><td>SIGNER_EMAIL</td><td>Step 3</td><td>orderform@consumerdirect.com</td></tr>
+          <tr><td>EXPIRATION_DATE</td><td>Step 2</td><td>4/15/2026</td></tr>
+          <tr><td>PARTNER_TYPE</td><td>Step 2</td><td>Partnership</td></tr>
+          <tr><td>RETAIL_PRICING_FOR_BUILD_PLAN</td><td>Step 2</td><td>29.99</td></tr>
+          <tr><td>RETAIL_PRICING_FOR_PROTECT_PLAN</td><td>Step 2</td><td>19.99</td></tr>
+          <tr><td>AXDRAFT_TRIAL_SELECTION</td><td>Step 2</td><td>7-Day, $1.00 Trial</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<footer class="footer">
+  Onit CLM Automation &middot; API Workflow Reference
+</footer>
+
+</body>
+</html>
