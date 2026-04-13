@@ -6,13 +6,8 @@ Automates the Consumer Direct contract lifecycle in Onit App Builder: create con
 
 ```bash
 pip install -r requirements.txt
-```
-
-Create a `.env` file:
-
-```
-ONIT_BASE_URL=https://your-instance.onit.com
-ONIT_API_KEY=your_api_token
+cp .env.example .env
+# Fill in your API keys in .env
 ```
 
 ## Workflow
@@ -29,13 +24,15 @@ Reads a Snowflake/HubSpot CSV export and creates a CLM contract for each row. Lo
 
 **Required CSV columns:** `COMPANY_NAME`, `CONTACT_NAME`, `CONTACT_EMAIL`, `DEAL_ID`, `REQUESTING_EMAIL`
 
-### Step 2 — Generate Order Form (AxDraft)
+### Step 2 — Generate Order Form (AxDraft API)
 
 ```bash
-python onit_client.py start-axdraft <atom_id>
+python onit_client.py start-axdraft data/your_file.csv
 ```
 
-Triggers the "Start AxDraft Contract" reaction which opens the AxDraft document generation flow. Currently requires manual completion in the AxDraft UI.
+Calls the AxDraft process-draft API to auto-generate Order Form documents. Maps CSV fields (partner type, pricing, trial period, etc.) to AxDraft questionnaire answers.
+
+**Additional CSV columns used:** `PARTNER_TYPE`, `RETAIL_PRICING_FOR_BUILD_PLAN`, `RETAIL_PRICING_FOR_PROTECT_PLAN`, `AXDRAFT_TRIAL_SELECTION`, `EXPIRATION_DATE`
 
 ### Step 3 — Send for Signature (HelloSign)
 
@@ -44,6 +41,16 @@ python onit_client.py send-for-signature <atom_id>
 ```
 
 Finds the Order Form document, creates a Send for Signature atom with two signers (Other Party Contact + Sales Operations), and triggers HelloSign to send signature request emails.
+
+### Webhook Testing
+
+To test AxDraft `after-draft` webhooks locally:
+
+```bash
+python webhook_test.py          # Start local webhook server on port 5555
+ngrok http 5555                 # Expose via ngrok (in another terminal)
+# Paste ngrok URL + /webhooks/axdraft into AxDraft webhook preferences
+```
 
 ## Utility Commands
 
@@ -58,15 +65,17 @@ python onit_client.py execute-reaction <atom_id> <name>      # Fire a reaction o
 ## Project Structure
 
 ```
-onit_client.py        CLI entry point
+onit_client.py          CLI entry point
+webhook_test.py         Local webhook receiver for AxDraft testing
+.env.example            Template for environment variables
 src/
-  config.py           Environment variables and dictionary IDs
-  api.py              Low-level Onit REST API helpers
-  lookups.py          Contact and document lookup helpers
-  contracts.py        Step 1: Create contracts from CSV
-  axdraft.py          Step 2: Trigger AxDraft document generation
-  signature.py        Step 3: Send for HelloSign signature
-  utils.py            Utility commands for exploring Onit data
-data/                 CSV files
-docs/                 API documentation and reference files
+  config.py             Environment variables and dictionary IDs
+  api.py                Low-level Onit REST API helpers
+  lookups.py            Contact and document lookup helpers
+  contracts.py          Step 1: Create contracts from CSV
+  axdraft.py            Step 2: AxDraft API document generation
+  signature.py          Step 3: Send for HelloSign signature
+  utils.py              Utility commands for exploring Onit data
+data/                   CSV files and field mapping spreadsheets
+docs/                   API documentation and reference files
 ```

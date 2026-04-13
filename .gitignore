@@ -1,8 +1,21 @@
+# Secrets
 .env
+
+# Python
 __pycache__/
 *.pyc
+
+# Claude Code
 .claude/
+
+# OS
+.DS_Store
+
+# Media
 *.mp4
 *.mov
 *.avi
 *.mkv
+
+# Test artifacts
+webhook_log.json

@@ -25,7 +25,7 @@ from src.utils import list_apps, app_details, list_atoms, get_atom, execute_reac
 COMMANDS = {
     # Workflow
     "create-contract":    (1, lambda args: create_contract(args[0])),
-    "start-axdraft":      (1, lambda args: start_axdraft(args[0])),
+    "start-axdraft":      (1, lambda args: start_axdraft(args[0])),       # now takes CSV path
     "send-for-signature": (1, lambda args: send_for_signature(args[0])),
     # Utility
     "get-atom":           (1, lambda args: get_atom(args[0])),
