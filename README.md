@@ -12,6 +12,34 @@ cp .env.example .env
 
 ## Workflow
 
+```mermaid
+flowchart LR
+    CSV["CSV\n(Snowflake/HubSpot)"]
+    S1["Step 1\nCreate Contract"]
+    S2["Step 2\nGenerate Order Form"]
+    S3["Step 3\nSend for Signature"]
+    WH["Webhook\n(after-draft)"]
+
+    CSV --> S1
+    S1 -->|"atom_id"| S2
+    S2 -->|"POST process-draft\n(35 fields)"| AXD["AxDraft API"]
+    AXD -->|"redirectUrl"| DOC["Order Form\nDocument"]
+    AXD -.->|"after-draft"| WH
+    WH -.->|"payload"| ONIT["Onit CLM"]
+    DOC --> S3
+    S3 -->|"HelloSign"| SIG["Signature\nRequests"]
+
+    style CSV fill:#f0f0f0,stroke:#333
+    style S1 fill:#4a90d9,stroke:#333,color:#fff
+    style S2 fill:#4a90d9,stroke:#333,color:#fff
+    style S3 fill:#4a90d9,stroke:#333,color:#fff
+    style AXD fill:#2ecc71,stroke:#333,color:#fff
+    style DOC fill:#f39c12,stroke:#333,color:#fff
+    style WH fill:#9b59b6,stroke:#333,color:#fff
+    style ONIT fill:#e74c3c,stroke:#333,color:#fff
+    style SIG fill:#1abc9c,stroke:#333,color:#fff
+```
+
 The automation runs in three steps:
 
 ### Step 1 — Create Contracts
