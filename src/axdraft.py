@@ -8,6 +8,14 @@ The AxDraft API expects an array of {question, answer} pairs where:
   - "question" is the AxDraft variable name (Column B from the field mapping spreadsheet)
   - "answer" is the selected value
 
+Questionnaire flow (confirmed from AxDraft UI):
+  1. Generate a new order form  (hardcoded)
+  2. What is the complexity?     Standard (hardcoded)
+  3. What is the deal type?      from CSV PARTNER_TYPE
+  4. Do you want to add W9?      Yes (hardcoded)
+  5. Are you including a trial?  from CSV AXDRAFT_TRIAL_SELECTION
+  6. Input fields page           Order ID, expiration, company info, contact, pricing
+
 Field mapping reference:
   data/AXD Filters list - Consumer Direct API Integration.xlsx
 
@@ -55,172 +63,39 @@ def build_answers(row: dict) -> list:
 
     answers = []
 
-    # --- Selection Questions ---
+    # --- Selection Questions (5) ---
 
-    # Deal complexity: Standard for automated flow
-    answers.append({
-        "question": "select_What_is_the_complexity_of_deal?",
-        "answer": "Standard",
-    })
-
-    # New order form (not changing an existing one)
+    # 1. New order form (hardcoded)
     answers.append({
         "question": "select_Do_you_want_to_generate_a_new_order_form_or_change_an_executed_order?",
         "answer": "Generate a new order form",
     })
 
-    # Deal type from CSV PARTNER_TYPE
+    # 2. Deal complexity (hardcoded)
+    answers.append({
+        "question": "select_What_is_the_complexity_of_deal?",
+        "answer": "Standard",
+    })
+
+    # 3. Deal type from CSV PARTNER_TYPE
     answers.append({
         "question": "select_What_is_the_deal_type?",
         "answer": partner_type,
     })
 
-    # Pricing model — Partnership uses Transactional, White Label uses Bundle
-    pricing = "Bundle Pricing" if partner_type == "White Label" else "Transactional Pricing"
+    # 4. W9 form (hardcoded)
     answers.append({
-        "question": "select_What_is_the_Pricing?",
-        "answer": pricing,
-    })
-
-    # ConsumerDirect Merchant Processor — No by default
-    answers.append({
-        "question": "select_Are_you_adding_ConsumerDirect_Merchant_Processor?",
-        "answer": "No",
-    })
-
-    # myLONA Rev Share — No by default
-    answers.append({
-        "question": "select_Do_you_want_to_add_myLONA_Rev_Share?",
-        "answer": "No",
-    })
-
-    # Standard prices for Plan Licensing Fees — Yes (using standard)
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_prices_for_Plan_Licensing_Fees?",
+        "question": "select_Do_you_want_to_add_W9_form?",
         "answer": "Yes",
     })
 
-    # Ramp Up Pricing — No by default
-    answers.append({
-        "question": "select_Do_you_want_to_add_on_Ramp_Up_Pricing?",
-        "answer": "No",
-    })
-
-    # Standard price for 3 Bureau Credit Report — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_price_for_3_Bureau_Credit_Report_and_Scores?",
-        "answer": "Yes",
-    })
-
-    # Further revisions — No
-    answers.append({
-        "question": "select_Are_there_any_further_revisions_required_beyond_what_was_previously_addressed?",
-        "answer": "No",
-    })
-
-    # Product
-    answers.append({
-        "question": "select_What_is_the_Product?",
-        "answer": "The Lending Score",
-    })
-
-    # Plan — Plan A default
-    answers.append({
-        "question": "select_Choose_Plan:",
-        "answer": "Plan A",
-    })
-
-    # Customer Service — No by default
-    answers.append({
-        "question": "select_Do_you_want_ConsumerDirect_to_provide_Customer_Service_for_Partner_Clients?",
-        "answer": "No",
-    })
-
-    # Trial period from CSV
+    # 5. Trial period from CSV AXDRAFT_TRIAL_SELECTION
     answers.append({
         "question": "select_Are_you_including_a_trial_period?",
         "answer": trial_selection,
     })
 
-    # Exclusivity — No by default
-    answers.append({
-        "question": "select_Is_this_an_Exclusivity_Relationship?",
-        "answer": "No",
-    })
-
-    # Standard Setup Promo fee — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_Setup_Promo_fee?",
-        "answer": "Yes",
-    })
-
-    # Standard Additional Tracking Link promo fee — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_Additional_Tracking_Link_promo_fee?",
-        "answer": "Yes",
-    })
-
-    # W9 form — No
-    answers.append({
-        "question": "select_Do_you_want_to_add_W9_form?",
-        "answer": "No",
-    })
-
-    # Supersede legacy agreement — No
-    answers.append({
-        "question": "select_Does_this_Order_Form_supersede_a_previous_legacy_agreement?",
-        "answer": "No",
-    })
-
-    # Disable action buttons — No
-    answers.append({
-        "question": "select_Do_you_want_to_disable_the_action_buttons?",
-        "answer": "No",
-    })
-
-    # Sponsored Plan — No
-    answers.append({
-        "question": "select_Are_you_adding_a_Sponsored_Plan_option?",
-        "answer": "No Sponsored Plan",
-    })
-
-    # Hide a Plan — No
-    answers.append({
-        "question": "select_Do_you_want_to_hide_a_Plan?",
-        "answer": "No",
-    })
-
-    # Discounts/promos — No promos by default
-    answers.append({
-        "question": "Please_select_discounts_and_promos_if_applicable",
-        "answer": "No promos",
-    })
-
-    # Standard price for 1 Bureau Credit Report — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_price_for_1_Bureau_Credit_Report_and_Scores?",
-        "answer": "Yes",
-    })
-
-    # Standard price for $1MM Family Fraud Insurance — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_price_for_$1MM_Family_Fraud_Insurance?",
-        "answer": "Yes",
-    })
-
-    # Standard price for PrivacyMaster — Yes
-    answers.append({
-        "question": "select_Do_you_want_to_use_standard_price_for_PrivacyMaster?",
-        "answer": "Yes",
-    })
-
-    # Standard Development Promo Fee — Yes
-    answers.append({
-        "question": "Do_you_want_to_use_standard_Development_Promo_Fee?",
-        "answer": "Yes",
-    })
-
-    # --- Input Fields ---
+    # --- Input Fields (12) ---
 
     # Order ID
     answers.append({
@@ -239,6 +114,23 @@ def build_answers(row: dict) -> list:
         "question": "Type_in_Company_name~l",
         "answer": company_name,
     })
+    # TODO: address fields hardcoded for now — may be auto-filled or added to CSV later
+    answers.append({
+        "question": "Type_in_Company_address~l",
+        "answer": "44 Eagle Point",
+    })
+    answers.append({
+        "question": "Type_in_Company_city~l",
+        "answer": "Irvine",
+    })
+    answers.append({
+        "question": "Type_in_Company_state_territory~l",
+        "answer": "California",
+    })
+    answers.append({
+        "question": "Type_in_Company_ZIP~l",
+        "answer": "92604",
+    })
 
     # Contact info
     answers.append({
@@ -254,13 +146,11 @@ def build_answers(row: dict) -> list:
         "answer": contact_email,
     })
 
-    # Retail Setup Pricing for Build Plan
+    # Retail Setup Pricing
     answers.append({
         "question": "Type_in_Retail_Setup_Pricing_for_Build_Plan~h~$50.00_or_greater_requires_Finance_Approval~num",
         "answer": build_price,
     })
-
-    # Retail Setup Pricing for Protect Plan
     answers.append({
         "question": "Type_in_Retail_Setup_Pricing_for_Protect_Plan~h~$50.00_or_greater_requires_Finance_Approval~num",
         "answer": protect_price,
@@ -287,7 +177,7 @@ def process_draft(row: dict) -> dict:
 
     payload = {
         "token": AXDRAFT_TOKEN,
-        "documendId": AXDRAFT_DOCUMENT_ID,  # Note: typo is in the AxDraft API spec
+        "documentId": AXDRAFT_DOCUMENT_ID,
         "documentName": f"Order Form - {company_name} - {deal_id}",
         "answers": answers,
         "email": row.get("REQUESTING_EMAIL", "").strip(),
@@ -300,7 +190,10 @@ def process_draft(row: dict) -> dict:
     print(f"  [2/2] Calling AxDraft process-draft API...")
     url = f"{AXDRAFT_BASE_URL}/api/customers/process-draft"
     data = json.dumps(payload).encode("utf-8")
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "ConsumerDirect-OnitAPI/1.0",
+    }
 
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
